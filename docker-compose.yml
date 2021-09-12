@@ -1,0 +1,67 @@
+version: "3.6"
+services:
+  mk-jenkins:
+    build: 
+      context: ./jenkins
+      dockerfile: Dockerfile
+    container_name: mk-jenkins
+    image: mk-jenkins
+    container_name: mk-jenkins
+    privileged: true
+    restart: unless-stopped
+    expose:
+      - 8080
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+    environment: 
+      - DOCKER_TLS_VERIFY:1
+      - DOCKER_CERT_PATH:/certs/client
+      - DOCKER_HOST:tcp://docker:2376
+    networks:
+      - mk_ci_proxy  
+      
+  mk-docker:
+    image: docker:dind
+    privileged: true
+    container_name: mk-docker
+    restart: unless-stopped
+    hostname: docker
+    ports:
+      - 2376:2376
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client
+    environment: 
+      - DOCKER_TLS_CERTDIR:/certs
+    networks:
+      mk_ci_proxy:
+       aliases: 
+        - docker
+        - mk_ci_proxy
+
+  mk-haproxy:
+    build:
+      context: ./haproxy
+      dockerfile: Dockerfile
+    image: mk-haproxy
+    depends_on:
+      - mk-jenkins
+      - mk-docker
+    container_name: mk-haproxy
+    restart: unless-stopped
+    ports:
+      - 80:80
+    networks:
+      - mk_ci_proxy
+
+networks:
+    mk_ci_proxy:
+
+volumes:
+  jenkins-data:
+    driver: local
+    name: jenkins-data
+  jenkins-docker-certs:
+    driver: local
+    name: jenkins-docker-certs
