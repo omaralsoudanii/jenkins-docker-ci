@@ -2,6 +2,8 @@
 
 Docker setup for Jenkins with docker plugin integration
 
+![jenkins](https://user-images.githubusercontent.com/7079173/133009029-aaec7989-1c9b-433d-9fc3-60e6dfb8d9a7.png)
+
 ## Why
 
 - If you want to learn Jenkins and try some piplines, this will save you the headache of setting it up yourself
